@@ -1,6 +1,17 @@
+name: Build and deploy ASP.Net Core app to Azure Web App - PilotoIABackendApis
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: read
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,3 +31,23 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'PilotoIABackendApis'
+          slot-name: 'Production'
