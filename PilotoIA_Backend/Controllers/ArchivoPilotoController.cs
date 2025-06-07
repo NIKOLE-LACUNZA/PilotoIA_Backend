@@ -12,7 +12,7 @@
     using System.Security.Claims;
     using Microsoft.AspNetCore.Routing;
     namespace PilotoIA_Backend.Controllers
-    {
+    { 
         [Route("api/[controller]")]
         [ApiController]
         public class ArchivoPilotoController : ControllerBase
