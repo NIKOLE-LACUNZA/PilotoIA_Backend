@@ -40,6 +40,7 @@
                         archivo.Titulo,
                         archivo.Temas,
                         archivo.Archivos,
+                        archivo.Vectores,
                         archivo.Estado).Result;
 
                     if (resultado != null)
@@ -58,11 +59,12 @@
             }
 
         [HttpGet("listar")]
-        public IActionResult ListarArchivoPiloto([FromQuery] int TamanioPagina, [FromQuery] int NumeroPagina)
+        public IActionResult ListarArchivoPiloto([FromQuery] string? Filtro, [FromQuery] int TamanioPagina, [FromQuery] int NumeroPagina)
         {
             try
             {
                 ListaArchivoPilotoRespuesta Result = vgDataAccess.ListarArchivoPilotoAsync(
+                    Filtro,
                     TamanioPagina,
                     NumeroPagina).Result;
 
@@ -80,5 +82,34 @@
                 return StatusCode(500, new { IdTipoMensaje = 1, Message = ex.Message });
             }
         }
+
+        [HttpPost("editar")]
+        public IActionResult EditarArchivoPiloto([FromBody] EditarArchivoPiloto archivo)
+        {
+            try
+            {
+                var resultado = vgDataAccess.EditarArchivoPilotoAsync(
+                    archivo.IdPiloto,
+                    archivo.Usuario,
+                    archivo.Titulo,
+                    archivo.Temas,
+                    archivo.Archivos,
+                    archivo.Vectores).Result;
+
+                if (resultado != null)
+                {
+                    _logger.LogInformation("Registro Editado");
+                    return Ok(new { resultado.Mensaje, IdTipoMensaje = resultado.IdTipoMensaje });
+                }
+
+                return BadRequest("No se pudo editar el archivo.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { IdTipoMensaje = 1, Message = ex.Message });
+            }
+        }
+
     }
-    }
+}

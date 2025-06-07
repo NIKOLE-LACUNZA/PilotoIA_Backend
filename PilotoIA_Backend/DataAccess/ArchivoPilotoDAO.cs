@@ -20,7 +20,8 @@ namespace PilotoIA_Backend.DataAccess
         public async Task<MensajeRespuesta> RegistrarArchivoPiloto(
             string Titulo,
             string Tema,
-            List<string> Rutas,
+            List<string> RutasArchivos,
+            List<string> RutasVectores,
             int Estado
             )
         {
@@ -29,27 +30,43 @@ namespace PilotoIA_Backend.DataAccess
 
             try
             {
-                DataTable lstRutas = new DataTable();
-                lstRutas.Columns.Add("Indice", typeof(int));
-                lstRutas.Columns.Add("Ruta", typeof(string));
+                DataTable lstRutasArchivos = new DataTable();
+                lstRutasArchivos.Columns.Add("Indice", typeof(int));
+                lstRutasArchivos.Columns.Add("Ruta", typeof(string));
 
-                foreach(string item in Rutas)
+                foreach(string item in RutasArchivos)
                 {
-                    lstRutas.Rows.Add(indice, item);
+                    lstRutasArchivos.Rows.Add(indice, item);
                     indice++;
                 }
-                using(SqlCommand oCmC = new SqlCommand())
+                indice = 0;
+
+                DataTable lstRutasVectores = new DataTable();
+                lstRutasVectores.Columns.Add("Indice", typeof(int));
+                lstRutasVectores.Columns.Add("Ruta", typeof(string));
+
+                foreach (string item in RutasArchivos)
+                {
+                    lstRutasVectores.Rows.Add(indice, item);
+                    indice++;
+                }
+                using (SqlCommand oCmC = new SqlCommand())
                 {
                     oCmC.CommandType = CommandType.StoredProcedure;
                     oCmC.CommandText = "Piloto_INS";
-                    SqlParameter lstRutasParam= new SqlParameter("@tblRutas", SqlDbType.Structured);
-                    lstRutasParam.Value = lstRutas;
-                    lstRutasParam.TypeName = "dbo.RutaArchivoLST";
+                    SqlParameter lstRutaArchivosParam= new SqlParameter("@tblRutasArchivo", SqlDbType.Structured);
+                    lstRutaArchivosParam.Value = lstRutasArchivos;
+                    lstRutaArchivosParam.TypeName = "dbo.RutaArchivoLST";
+
+                    SqlParameter lstRutasVectoresParam = new SqlParameter("@tblRutasVector", SqlDbType.Structured);
+                    lstRutasVectoresParam.Value = lstRutasArchivos;
+                    lstRutasVectoresParam.TypeName = "dbo.RutaVectorLST";
 
                     oCmC.Parameters.AddWithValue("@vchTitulo", Titulo);
                     oCmC.Parameters.AddWithValue("@vchTemas", Tema);
                     oCmC.Parameters.AddWithValue("@intEstado", Estado);
-                    oCmC.Parameters.Add(lstRutasParam);
+                    oCmC.Parameters.Add(lstRutaArchivosParam);
+                    oCmC.Parameters.Add(lstRutasVectoresParam);
 
                     oConn = await vgBDConeccion.AbrirModoLecturaAsync();
                     oTran = await Task.Run<SqlTransaction>(() => oConn.BeginTransaction());
@@ -92,6 +109,7 @@ namespace PilotoIA_Backend.DataAccess
         }
 
         public async Task<ListaArchivoPilotoRespuesta> ListarArchivoPiloto(
+            string Filtro,
             int TamanioPagina,
             int NumeroPagina
             )
@@ -105,7 +123,8 @@ namespace PilotoIA_Backend.DataAccess
                 using (SqlCommand oCmC = new SqlCommand())
                 {
                     oCmC.CommandType = CommandType.StoredProcedure;
-                    oCmC.CommandText = "Piloto_LST";
+                    oCmC.CommandText = "Piloto_FLT";
+                    oCmC.Parameters.AddWithValue("@vchfiltro", Filtro);
                     oCmC.Parameters.AddWithValue("@intTamanioPagina", TamanioPagina);
                     oCmC.Parameters.AddWithValue("@intPagina", NumeroPagina);
 
@@ -124,6 +143,7 @@ namespace PilotoIA_Backend.DataAccess
                                 Titulo = oSqlR["Titulo"] != DBNull.Value ? Convert.ToString(oSqlR["Titulo"]) : string.Empty,
                                 Temas = oSqlR["Temas"] != DBNull.Value ? Convert.ToString(oSqlR["Temas"]) : string.Empty,
                                 Archivos = oSqlR["Archivos"] != DBNull.Value ? Convert.ToString(oSqlR["Archivos"]) : string.Empty,
+                                Vectores = oSqlR["Vectores"] != DBNull.Value ? Convert.ToString(oSqlR["Vectores"]) : string.Empty,
                                 Estado = oSqlR["Estado"] != DBNull.Value ? Convert.ToString(oSqlR["Estado"]) : string.Empty,
                             };
                             Lista.Add(respuesta);
@@ -158,6 +178,99 @@ namespace PilotoIA_Backend.DataAccess
             }
             result.Lista = Lista;
             result.TotalFilas = TotalCuenta;
+            return result;
+        }
+
+        public async Task<MensajeRespuesta> EditarArchivoPiloto(
+            int IdPiloto,
+            string Usuario,
+            string Titulo,
+            string Tema,
+            List<string> RutasArchivos,
+            List<string> RutasVectores
+            )
+        {
+            var result = new MensajeRespuesta();
+            int indice = 0;
+
+            try
+            {
+                DataTable lstRutasArchivos = new DataTable();
+                lstRutasArchivos.Columns.Add("Indice", typeof(int));
+                lstRutasArchivos.Columns.Add("Ruta", typeof(string));
+
+                foreach (string item in RutasArchivos)
+                {
+                    lstRutasArchivos.Rows.Add(indice, item);
+                    indice++;
+                }
+                indice = 0;
+
+                DataTable lstRutasVectores = new DataTable();
+                lstRutasVectores.Columns.Add("Indice", typeof(int));
+                lstRutasVectores.Columns.Add("Ruta", typeof(string));
+
+                foreach (string item in RutasVectores)
+                {
+                    lstRutasVectores.Rows.Add(indice, item);
+                    indice++;
+                }
+                using (SqlCommand oCmC = new SqlCommand())
+                {
+                    oCmC.CommandType = CommandType.StoredProcedure;
+                    oCmC.CommandText = "Piloto_UPD";
+                    SqlParameter lstRutaArchivosParam = new SqlParameter("@tblRutasArchivos", SqlDbType.Structured);
+                    lstRutaArchivosParam.Value = lstRutasArchivos;
+                    lstRutaArchivosParam.TypeName = "dbo.RutaArchivoLST";
+
+                    SqlParameter lstRutasVectoresParam = new SqlParameter("@tblRutasVectores", SqlDbType.Structured);
+                    lstRutasVectoresParam.Value = lstRutasVectores;
+                    lstRutasVectoresParam.TypeName = "dbo.RutaVectorLST";
+
+                    oCmC.Parameters.AddWithValue("@vchUsuMod", Usuario);
+                    oCmC.Parameters.AddWithValue("@intIdPiloto", IdPiloto);
+                    oCmC.Parameters.AddWithValue("@vchTitulo", Titulo);
+                    oCmC.Parameters.AddWithValue("@vchTemas", Tema);
+                    oCmC.Parameters.Add(lstRutaArchivosParam);
+                    oCmC.Parameters.Add(lstRutasVectoresParam);
+
+                    oConn = await vgBDConeccion.AbrirModoLecturaAsync();
+                    oTran = await Task.Run<SqlTransaction>(() => oConn.BeginTransaction());
+                    oCmC.Connection = oTran.Connection;
+                    oCmC.Transaction = oTran;
+                    using (SqlDataReader oSqlR = await oCmC.ExecuteReaderAsync())
+                    {
+                        while (await oSqlR.ReadAsync())
+                        {
+                            result = new MensajeRespuesta()
+                            {
+                                Mensaje = oSqlR["Mensaje"] != DBNull.Value ? Convert.ToString(oSqlR["Mensaje"]) : string.Empty,
+                                IdMensaje = oSqlR["IdMensaje"] != DBNull.Value ? Convert.ToInt32(oSqlR["IdMensaje"]) : 0,
+                                IdTipoMensaje = oSqlR["TipoMensaje"] != DBNull.Value ? Convert.ToInt32(oSqlR["TipoMensaje"]) : 0,
+                            };
+                        }
+                    }
+                    oTran.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Contrucción de Salida
+                if (oTran != null)
+                {
+                    await Task.Run(() => oTran.Rollback());
+                }
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                if (oTran != null)
+                {
+                    await oTran.DisposeAsync();
+                    await oConn.DisposeAsync();
+                    vgBDConeccion.Dispose();
+                }
+            }
             return result;
         }
     }

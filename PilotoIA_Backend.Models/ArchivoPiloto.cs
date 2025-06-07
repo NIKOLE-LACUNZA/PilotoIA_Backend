@@ -11,9 +11,19 @@ namespace PilotoIA_Backend.Models
         public string Titulo {  get; set; }
         public string Temas { get; set; }
         public List<string> Archivos { get; set; }
+        public List<string> Vectores { get; set; }
         public int Estado {  get; set; }
     }
 
+    public class EditarArchivoPiloto
+    {        
+        public string Usuario { get; set; }
+        public int IdPiloto { get; set; }
+        public string? Titulo { get; set; }
+        public string? Temas { get; set; }
+        public List<string>? Archivos { get; set; }
+        public List<string>? Vectores { get; set; }
+    }
     public class ListarArchivoPilotoDTO
     {
         public int TamanioPagina { get; set; }
@@ -25,6 +35,8 @@ namespace PilotoIA_Backend.Models
         public string Titulo { get; set; }
         public string Temas { get; set; }
         public string Archivos { get; set; }
+
+        public string Vectores { get; set; }
         public string Estado { get; set; }
     }
     public class ListaArchivoPilotoRespuesta
