@@ -1,4 +1,5 @@
-﻿using PilotoIA_Backend.DataAccess;
+﻿using System.Text.Json;
+using PilotoIA_Backend.DataAccess;
 using PilotoIA_Backend.Models;
 namespace PilotoIA_Backend.BusinessLogic
 {
@@ -17,21 +18,54 @@ namespace PilotoIA_Backend.BusinessLogic
         public async Task<MensajeRespuesta> RegistrarArchivoPilotoAsync(
             string Titulo,
             string Tema,
-            List<string> RutasArchivos,
-            List<string> RutasVectores,
-            int Estado
+            List<string> ArchivosBase64
             )
         {
             try
             {
+                var rutasArchivos = new List<string>();
+                var rutasVectores = new List<string>();
+
                 MensajeRespuesta Respuesta = null;
+
+                using var httpClient = new HttpClient();
+
+                for (int i = 0; i < ArchivosBase64.Count; i++)
+                {
+                    var base64 = ArchivosBase64[i];
+                    var nombreArchivo = $"documento_{i + 1}.pdf";
+
+                    var payload = new
+                    {
+                        nombreArchivo = nombreArchivo,
+                        base64Contenido = base64
+                    };
+
+                    var response = await httpClient.PostAsJsonAsync("https://pilotoianuevobackend-bbb7fqc0hbd4ccaf.canadacentral-01.azurewebsites.net/api/document/subir-base64", payload);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new Exception($"Error al subir el archivo {nombreArchivo}: {response.StatusCode}");
+                    }
+
+                    using var responseStream = await response.Content.ReadAsStreamAsync();
+                    using var doc = await JsonDocument.ParseAsync(responseStream);
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("rutaArchivo", out var rutaArchivo))
+                        rutasArchivos.Add(rutaArchivo.GetString());
+
+                    if (root.TryGetProperty("rutaVector", out var rutaVector))
+                        rutasVectores.Add(rutaVector.GetString());
+                }
+
 
                 Respuesta = await vgDataAccess.RegistrarArchivoPiloto(
                     Titulo,
                     Tema,
-                    RutasArchivos,
-                    RutasVectores,
-                    Estado);
+                    rutasArchivos,
+                    rutasVectores
+                    );
 
                 return Respuesta;
             }

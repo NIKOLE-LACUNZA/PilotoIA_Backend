@@ -11,7 +11,6 @@ namespace PilotoIA_Backend.Models
         public string Titulo {  get; set; }
         public string Temas { get; set; }
         public List<string> Archivos { get; set; }
-        public List<string> Vectores { get; set; }
         public int Estado {  get; set; }
     }
 

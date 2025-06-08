@@ -21,8 +21,7 @@ namespace PilotoIA_Backend.DataAccess
             string Titulo,
             string Tema,
             List<string> RutasArchivos,
-            List<string> RutasVectores,
-            int Estado
+            List<string> RutasVectores
             )
         {
             var result = new MensajeRespuesta();
@@ -39,17 +38,19 @@ namespace PilotoIA_Backend.DataAccess
                     lstRutasArchivos.Rows.Add(indice, item);
                     indice++;
                 }
+
                 indice = 0;
 
                 DataTable lstRutasVectores = new DataTable();
                 lstRutasVectores.Columns.Add("Indice", typeof(int));
                 lstRutasVectores.Columns.Add("Ruta", typeof(string));
 
-                foreach (string item in RutasArchivos)
+                foreach (string item in RutasVectores)
                 {
                     lstRutasVectores.Rows.Add(indice, item);
                     indice++;
                 }
+
                 using (SqlCommand oCmC = new SqlCommand())
                 {
                     oCmC.CommandType = CommandType.StoredProcedure;
@@ -57,16 +58,14 @@ namespace PilotoIA_Backend.DataAccess
                     SqlParameter lstRutaArchivosParam= new SqlParameter("@tblRutasArchivo", SqlDbType.Structured);
                     lstRutaArchivosParam.Value = lstRutasArchivos;
                     lstRutaArchivosParam.TypeName = "dbo.RutaArchivoLST";
-
-                    SqlParameter lstRutasVectoresParam = new SqlParameter("@tblRutasVector", SqlDbType.Structured);
-                    lstRutasVectoresParam.Value = lstRutasArchivos;
-                    lstRutasVectoresParam.TypeName = "dbo.RutaVectorLST";
+                    SqlParameter lstRutaVectoresParam = new SqlParameter("@tblRutasVector", SqlDbType.Structured);
+                    lstRutaVectoresParam.Value = lstRutasVectores;
+                    lstRutaVectoresParam.TypeName = "dbo.RutaVectorLST";
 
                     oCmC.Parameters.AddWithValue("@vchTitulo", Titulo);
                     oCmC.Parameters.AddWithValue("@vchTemas", Tema);
-                    oCmC.Parameters.AddWithValue("@intEstado", Estado);
                     oCmC.Parameters.Add(lstRutaArchivosParam);
-                    oCmC.Parameters.Add(lstRutasVectoresParam);
+                    oCmC.Parameters.Add(lstRutaVectoresParam);
 
                     oConn = await vgBDConeccion.AbrirModoLecturaAsync();
                     oTran = await Task.Run<SqlTransaction>(() => oConn.BeginTransaction());

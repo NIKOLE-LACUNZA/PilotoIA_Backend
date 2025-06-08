@@ -39,9 +39,8 @@
                     var resultado = vgDataAccess.RegistrarArchivoPilotoAsync(
                         archivo.Titulo,
                         archivo.Temas,
-                        archivo.Archivos,
-                        archivo.Vectores,
-                        archivo.Estado).Result;
+                        archivo.Archivos
+                        ).Result;
 
                     if (resultado != null)
                     {
