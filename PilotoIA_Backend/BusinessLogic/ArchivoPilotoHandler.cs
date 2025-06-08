@@ -52,10 +52,10 @@ namespace PilotoIA_Backend.BusinessLogic
                     using var doc = await JsonDocument.ParseAsync(responseStream);
                     var root = doc.RootElement;
 
-                    if (root.TryGetProperty("rutaArchivo", out var rutaArchivo))
+                    if (root.TryGetProperty("documento", out var rutaArchivo))
                         rutasArchivos.Add(rutaArchivo.GetString());
 
-                    if (root.TryGetProperty("rutaVector", out var rutaVector))
+                    if (root.TryGetProperty("vector", out var rutaVector))
                         rutasVectores.Add(rutaVector.GetString());
                 }
 
