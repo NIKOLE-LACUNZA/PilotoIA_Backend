@@ -33,7 +33,7 @@ namespace PilotoIA_Backend.BusinessLogic
                 for (int i = 0; i < ArchivosBase64.Count; i++)
                 {
                     var base64 = ArchivosBase64[i];
-                    var nombreArchivo = $"documento_{i + 1}.pdf";
+                    var nombreArchivo = $"documento_{i + 1}_{Guid.NewGuid()}.pdf";
 
                     var payload = new
                     {
