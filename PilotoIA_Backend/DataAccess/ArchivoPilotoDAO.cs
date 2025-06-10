@@ -256,12 +256,19 @@ namespace PilotoIA_Backend.DataAccess
                 oCmC.Connection = oConn;
                 oCmC.Transaction = oTran;
 
-                using var reader = await oCmC.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
+                using (var oSqlR = await oCmC.ExecuteReaderAsync())
                 {
-                    result.Mensaje = reader["Mensaje"]?.ToString() ?? "";
-                    result.IdMensaje = reader["IdMensaje"] != DBNull.Value ? Convert.ToInt32(reader["IdMensaje"]) : 0;
-                    result.IdTipoMensaje = reader["TipoMensaje"] != DBNull.Value ? Convert.ToInt32(reader["TipoMensaje"]) : 0;
+                    while (await oSqlR.ReadAsync())
+                    {
+                        result = new MensajeRespuesta
+                        {
+                            Mensaje = oSqlR["Mensaje"]?.ToString() ?? "",
+                            IdMensaje = oSqlR["IdMensaje"] != DBNull.Value ? Convert.ToInt32(oSqlR["IdMensaje"]) : 0,
+                            IdTipoMensaje = oSqlR["TipoMensaje"] != DBNull.Value ? Convert.ToInt32(oSqlR["TipoMensaje"]) : 0
+                        };
+                    }
+
+                    await oSqlR.CloseAsync();
                 }
 
                 oTran.Commit();
