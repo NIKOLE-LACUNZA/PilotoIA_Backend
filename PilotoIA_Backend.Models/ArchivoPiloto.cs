@@ -25,13 +25,21 @@ namespace PilotoIA_Backend.Models
     }
 
     public class EditarArchivoPiloto
-    {        
+    {
         public string Usuario { get; set; }
         public int IdPiloto { get; set; }
         public string? Titulo { get; set; }
         public string? Temas { get; set; }
-        public List<string>? Archivos { get; set; }
-        public List<string>? Vectores { get; set; }
+
+        public List<ListaArchivos> NuevosArchivos { get; set; } 
+        public List<int> IdsArchivosEliminados { get; set; }
+    }
+
+    public class ListaArchivosEdit
+    {
+        public int Id {  get; set; }
+        public string Nombre { get; set; }
+        public string Ruta { get; set; }
     }
     public class ListarArchivoPilotoDTO
     {

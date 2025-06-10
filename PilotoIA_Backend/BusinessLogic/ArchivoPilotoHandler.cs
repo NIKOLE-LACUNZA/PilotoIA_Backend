@@ -100,33 +100,61 @@ namespace PilotoIA_Backend.BusinessLogic
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<MensajeRespuesta> EditarArchivoPilotoAsync(
-            int IdPiloto,
-            string Usuario,
-            string Titulo,
-            string Tema,
-            List<string> RutasArchivos,
-            List<string> RutasVectores
-            )
+        public async Task<MensajeRespuesta> EditarArchivoPilotoAsync(EditarArchivoPiloto archivo)
         {
             try
             {
-                MensajeRespuesta Respuesta = null;
+                var rutasArchivos = new List<ListaArchivosEdit>();
+                var rutasVectores = new List<string>();
+                int indice = 0;
 
-                Respuesta = await vgDataAccess.EditarArchivoPiloto(
-                    IdPiloto,
-                    Usuario,
-                    Titulo,
-                    Tema,
-                    RutasArchivos,
-                    RutasVectores);
+                using var httpClient = new HttpClient();
 
-                return Respuesta;
+                foreach (var nuevo in archivo.NuevosArchivos)
+                {
+                    var payload = new
+                    {
+                        nombreArchivo = nuevo.Nombre,
+                        base64Contenido = nuevo.Base64
+                    };
+
+                    var response = await httpClient.PostAsJsonAsync("https://pilotoianuevobackend-bbb7fqc0hbd4ccaf.canadacentral-01.azurewebsites.net/api/document/subir-base64", payload);
+                    if (!response.IsSuccessStatusCode)
+                        throw new Exception($"Error al subir el archivo {nuevo.Nombre}");
+
+                    var contenido = await response.Content.ReadAsStringAsync();
+                    var json = JsonDocument.Parse(contenido);
+                    var root = json.RootElement;
+
+                    var rutaArchivo = root.GetProperty("documento").GetString();
+                    var rutaVector = root.GetProperty("vector").GetString();
+
+                    rutasArchivos.Add(new ListaArchivosEdit
+                    {
+                        Id = indice,
+                        Nombre = nuevo.Nombre,
+                        Ruta = rutaArchivo
+                    });
+
+                    rutasVectores.Add(rutaVector ?? "");
+                    indice++;
+                }
+
+                return await vgDataAccess.EditarArchivoPiloto(
+                    archivo.IdPiloto,
+                    archivo.Usuario,
+                    archivo.Titulo ?? "",
+                    archivo.Temas ?? "",
+                    rutasArchivos,
+                    rutasVectores,
+                    archivo.IdsArchivosEliminados
+                );
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception($"Error en handler: {ex.Message}", ex);
             }
         }
+
     }
 }

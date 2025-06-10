@@ -37,7 +37,7 @@ namespace PilotoIA_Backend.DataAccess
                 foreach (var archivo in RutasArchivos)
                 {
                     lstRutasArchivos.Rows.Add(indice, archivo.Nombre, archivo.Ruta);
-                    indice ++ ;
+                    indice++;
                 }
 
                 indice = 0;
@@ -56,7 +56,7 @@ namespace PilotoIA_Backend.DataAccess
                 {
                     oCmC.CommandType = CommandType.StoredProcedure;
                     oCmC.CommandText = "Piloto_INS";
-                    SqlParameter lstRutaArchivosParam= new SqlParameter("@tblRutasArchivo", SqlDbType.Structured);
+                    SqlParameter lstRutaArchivosParam = new SqlParameter("@tblRutasArchivo", SqlDbType.Structured);
                     lstRutaArchivosParam.Value = lstRutasArchivos;
                     lstRutaArchivosParam.TypeName = "dbo.RutaArchivoLST";
                     SqlParameter lstRutaVectoresParam = new SqlParameter("@tblRutasVector", SqlDbType.Structured);
@@ -186,81 +186,90 @@ namespace PilotoIA_Backend.DataAccess
             string Usuario,
             string Titulo,
             string Tema,
-            List<string> RutasArchivos,
-            List<string> RutasVectores
-            )
+            List<ListaArchivosEdit> RutasArchivos,
+            List<string> RutasVectores,
+            List<int> IdsEliminados
+        )
         {
             var result = new MensajeRespuesta();
             int indice = 0;
 
             try
             {
-                DataTable lstRutasArchivos = new DataTable();
+                var lstRutasArchivos = new DataTable();
                 lstRutasArchivos.Columns.Add("Indice", typeof(int));
+                lstRutasArchivos.Columns.Add("Nombre", typeof(string));
                 lstRutasArchivos.Columns.Add("Ruta", typeof(string));
 
-                foreach (string item in RutasArchivos)
+                foreach (var a in RutasArchivos)
                 {
-                    lstRutasArchivos.Rows.Add(indice, item);
-                    indice++;
+                    lstRutasArchivos.Rows.Add(a.Id, a.Nombre, a.Ruta);
                 }
-                indice = 0;
 
-                DataTable lstRutasVectores = new DataTable();
+                var lstRutasVectores = new DataTable();
                 lstRutasVectores.Columns.Add("Indice", typeof(int));
                 lstRutasVectores.Columns.Add("Ruta", typeof(string));
 
-                foreach (string item in RutasVectores)
+                foreach (var ruta in RutasVectores)
                 {
-                    lstRutasVectores.Rows.Add(indice, item);
-                    indice++;
+                    lstRutasVectores.Rows.Add(indice++, ruta);
                 }
-                using (SqlCommand oCmC = new SqlCommand())
+
+                var lstIdsEliminados = new DataTable();
+                lstIdsEliminados.Columns.Add("IdArchivo", typeof(int));
+                foreach (var id in IdsEliminados)
                 {
-                    oCmC.CommandType = CommandType.StoredProcedure;
-                    oCmC.CommandText = "Piloto_UPD";
-                    SqlParameter lstRutaArchivosParam = new SqlParameter("@tblRutasArchivos", SqlDbType.Structured);
-                    lstRutaArchivosParam.Value = lstRutasArchivos;
-                    lstRutaArchivosParam.TypeName = "dbo.RutaArchivoLST";
-
-                    SqlParameter lstRutasVectoresParam = new SqlParameter("@tblRutasVectores", SqlDbType.Structured);
-                    lstRutasVectoresParam.Value = lstRutasVectores;
-                    lstRutasVectoresParam.TypeName = "dbo.RutaVectorLST";
-
-                    oCmC.Parameters.AddWithValue("@vchUsuMod", Usuario);
-                    oCmC.Parameters.AddWithValue("@intIdPiloto", IdPiloto);
-                    oCmC.Parameters.AddWithValue("@vchTitulo", Titulo);
-                    oCmC.Parameters.AddWithValue("@vchTemas", Tema);
-                    oCmC.Parameters.Add(lstRutaArchivosParam);
-                    oCmC.Parameters.Add(lstRutasVectoresParam);
-
-                    oConn = await vgBDConeccion.AbrirModoLecturaAsync();
-                    oTran = await Task.Run<SqlTransaction>(() => oConn.BeginTransaction());
-                    oCmC.Connection = oTran.Connection;
-                    oCmC.Transaction = oTran;
-                    using (SqlDataReader oSqlR = await oCmC.ExecuteReaderAsync())
-                    {
-                        while (await oSqlR.ReadAsync())
-                        {
-                            result = new MensajeRespuesta()
-                            {
-                                Mensaje = oSqlR["Mensaje"] != DBNull.Value ? Convert.ToString(oSqlR["Mensaje"]) : string.Empty,
-                                IdMensaje = oSqlR["IdMensaje"] != DBNull.Value ? Convert.ToInt32(oSqlR["IdMensaje"]) : 0,
-                                IdTipoMensaje = oSqlR["TipoMensaje"] != DBNull.Value ? Convert.ToInt32(oSqlR["TipoMensaje"]) : 0,
-                            };
-                        }
-                    }
-                    oTran.Commit();
+                    lstIdsEliminados.Rows.Add(id);
                 }
+
+                using var oCmC = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    CommandText = "Piloto_UPD"
+                };
+
+                oCmC.Parameters.AddWithValue("@vchUsuMod", Usuario);
+                oCmC.Parameters.AddWithValue("@intIdPiloto", IdPiloto);
+                oCmC.Parameters.AddWithValue("@vchTitulo", Titulo);
+                oCmC.Parameters.AddWithValue("@vchTemas", Tema);
+
+                oCmC.Parameters.Add(new SqlParameter("@tblRutasArchivos", SqlDbType.Structured)
+                {
+                    TypeName = "dbo.RutaArchivoLST",
+                    Value = lstRutasArchivos
+                });
+
+                oCmC.Parameters.Add(new SqlParameter("@tblRutasVectores", SqlDbType.Structured)
+                {
+                    TypeName = "dbo.RutaVectorLST",
+                    Value = lstRutasVectores
+                });
+
+                oCmC.Parameters.Add(new SqlParameter("@tblIdsEliminados", SqlDbType.Structured)
+                {
+                    TypeName = "dbo.IdsEliminadosLST",
+                    Value = lstIdsEliminados
+                });
+
+                oConn = await vgBDConeccion.AbrirModoLecturaAsync();
+                oTran = oConn.BeginTransaction();
+                oCmC.Connection = oConn;
+                oCmC.Transaction = oTran;
+
+                using var reader = await oCmC.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    result.Mensaje = reader["Mensaje"]?.ToString() ?? "";
+                    result.IdMensaje = reader["IdMensaje"] != DBNull.Value ? Convert.ToInt32(reader["IdMensaje"]) : 0;
+                    result.IdTipoMensaje = reader["TipoMensaje"] != DBNull.Value ? Convert.ToInt32(reader["TipoMensaje"]) : 0;
+                }
+
+                oTran.Commit();
             }
             catch (Exception ex)
             {
-                // Contrucción de Salida
-                if (oTran != null)
-                {
-                    await Task.Run(() => oTran.Rollback());
-                }
-                throw new Exception(ex.Message);
+                if (oTran != null) await Task.Run(() => oTran.Rollback());
+                throw new Exception($"Error en DAO: {ex.Message}");
             }
             finally
             {
@@ -271,7 +280,9 @@ namespace PilotoIA_Backend.DataAccess
                     vgBDConeccion.Dispose();
                 }
             }
+
             return result;
         }
+
     }
 }

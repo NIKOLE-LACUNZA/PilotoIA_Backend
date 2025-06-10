@@ -87,13 +87,7 @@
         {
             try
             {
-                var resultado = vgDataAccess.EditarArchivoPilotoAsync(
-                    archivo.IdPiloto,
-                    archivo.Usuario,
-                    archivo.Titulo,
-                    archivo.Temas,
-                    archivo.Archivos,
-                    archivo.Vectores).Result;
+                var resultado = vgDataAccess.EditarArchivoPilotoAsync(archivo).Result;
 
                 if (resultado != null)
                 {
