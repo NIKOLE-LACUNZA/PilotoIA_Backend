@@ -10,7 +10,18 @@ namespace PilotoIA_Backend.Models
     {
         public string Titulo {  get; set; }
         public string Temas { get; set; }
-        public List<string> Archivos { get; set; }
+        public List<ListaArchivos> Archivos { get; set; }
+    }
+    public class ListaArchivos
+    {
+        public string Nombre {  get; set; }
+        public string Base64 {  get; set; }
+
+    }
+    public class RutaArchivo
+    {
+        public string Nombre { get; set; }
+        public string Ruta { get; set; }
     }
 
     public class EditarArchivoPiloto
@@ -42,4 +53,5 @@ namespace PilotoIA_Backend.Models
         public List<ListaArchivoPiloto> Lista { get; set; }
         public int TotalFilas { get; set; }
     }
+
 }

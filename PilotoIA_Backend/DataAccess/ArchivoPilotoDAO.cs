@@ -20,7 +20,7 @@ namespace PilotoIA_Backend.DataAccess
         public async Task<MensajeRespuesta> RegistrarArchivoPiloto(
             string Titulo,
             string Tema,
-            List<string> RutasArchivos,
+            List<RutaArchivo> RutasArchivos,
             List<string> RutasVectores
             )
         {
@@ -31,12 +31,13 @@ namespace PilotoIA_Backend.DataAccess
             {
                 DataTable lstRutasArchivos = new DataTable();
                 lstRutasArchivos.Columns.Add("Indice", typeof(int));
+                lstRutasArchivos.Columns.Add("Nombre", typeof(int));
                 lstRutasArchivos.Columns.Add("Ruta", typeof(string));
 
-                foreach(string item in RutasArchivos)
+                foreach (var archivo in RutasArchivos)
                 {
-                    lstRutasArchivos.Rows.Add(indice, item);
-                    indice++;
+                    lstRutasArchivos.Rows.Add(indice, archivo.Nombre, archivo.Ruta);
+                    indice ++ ;
                 }
 
                 indice = 0;

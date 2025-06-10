@@ -18,12 +18,12 @@ namespace PilotoIA_Backend.BusinessLogic
         public async Task<MensajeRespuesta> RegistrarArchivoPilotoAsync(
             string Titulo,
             string Tema,
-            List<string> ArchivosBase64
+            List<ListaArchivos> ArchivosBase64
             )
         {
             try
             {
-                var rutasArchivos = new List<string>();
+                var archivosLista = new List<RutaArchivo>();
                 var rutasVectores = new List<string>();
 
                 MensajeRespuesta Respuesta = null;
@@ -33,7 +33,7 @@ namespace PilotoIA_Backend.BusinessLogic
                 for (int i = 0; i < ArchivosBase64.Count; i++)
                 {
                     var base64 = ArchivosBase64[i];
-                    var nombreArchivo = $"documento_{i + 1}_{Guid.NewGuid()}.pdf";
+                    var nombreArchivo = base64.Nombre;
 
                     var payload = new
                     {
@@ -53,7 +53,11 @@ namespace PilotoIA_Backend.BusinessLogic
                     var root = doc.RootElement;
 
                     if (root.TryGetProperty("documento", out var rutaArchivo))
-                        rutasArchivos.Add(rutaArchivo.GetString());
+                        archivosLista.Add(new RutaArchivo
+                        {
+                            Nombre = nombreArchivo,
+                            Ruta = rutaArchivo.GetString()
+                        });
 
                     if (root.TryGetProperty("vector", out var rutaVector))
                         rutasVectores.Add(rutaVector.GetString());
@@ -63,7 +67,7 @@ namespace PilotoIA_Backend.BusinessLogic
                 Respuesta = await vgDataAccess.RegistrarArchivoPiloto(
                     Titulo,
                     Tema,
-                    rutasArchivos,
+                    archivosLista,
                     rutasVectores
                     );
 
