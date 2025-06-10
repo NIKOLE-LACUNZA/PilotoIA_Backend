@@ -79,6 +79,8 @@ namespace PilotoIA_Backend
 
             app.UseRouting();
 
+            app.UseCors("CorsPolicy");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
