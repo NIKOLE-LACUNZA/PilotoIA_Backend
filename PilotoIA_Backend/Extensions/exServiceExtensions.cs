@@ -17,7 +17,10 @@ namespace PilotoIA_Backend.Extensions
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
-                    builder.AllowAnyOrigin()
+                    builder.WithOrigins(
+                        "https://lemon-ocean-0f32d2710.6.azurestaticapps.net",
+                        "http://localhost:5173"
+                        )
                     .AllowAnyMethod()
                     .AllowAnyHeader());
             });
