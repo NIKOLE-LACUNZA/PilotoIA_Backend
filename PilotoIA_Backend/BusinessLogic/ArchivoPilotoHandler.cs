@@ -38,7 +38,7 @@ namespace PilotoIA_Backend.BusinessLogic
                     var payload = new
                     {
                         nombreArchivo = nombreArchivo,
-                        base64Contenido = base64
+                        base64Contenido = base64.Base64
                     };
 
                     var response = await httpClient.PostAsJsonAsync("https://pilotoianuevobackend-bbb7fqc0hbd4ccaf.canadacentral-01.azurewebsites.net/api/document/subir-base64", payload);

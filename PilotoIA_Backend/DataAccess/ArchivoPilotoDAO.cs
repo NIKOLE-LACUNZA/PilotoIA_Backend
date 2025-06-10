@@ -31,7 +31,7 @@ namespace PilotoIA_Backend.DataAccess
             {
                 DataTable lstRutasArchivos = new DataTable();
                 lstRutasArchivos.Columns.Add("Indice", typeof(int));
-                lstRutasArchivos.Columns.Add("Nombre", typeof(int));
+                lstRutasArchivos.Columns.Add("Nombre", typeof(string));
                 lstRutasArchivos.Columns.Add("Ruta", typeof(string));
 
                 foreach (var archivo in RutasArchivos)
